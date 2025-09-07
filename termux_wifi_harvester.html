@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fsociety WPA/WPA2 QR Scanner</title>
+<style>
+body {
+  margin: 0;
+  font-family: monospace;
+  background: #000;
+  color: #00ff00;
+}
+
+.terminal {
+  background: rgba(0,0,0,0.95);
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  box-shadow: 0 0 25px #00ff00;
+  min-height: 500px;
+  overflow-y: auto;
+}
+
+h1 {
+  text-align: center;
+  color: #00ff00;
+  font-size: 1.6em;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px #00ff00;
+}
+
+#output {
+  white-space: pre-wrap;
+  font-size: 0.95em;
+}
+
+#command-line {
+  width: 100%;
+  border: none;
+  background: black;
+  color: #00ff00;
+  font-family: monospace;
+  font-size: 1em;
+  outline: none;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.cursor {
+  display: inline-block;
+  width: 10px;
+  background: #00ff00;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%,50%,100% { background-color: #00ff00; }
+  25%,75% { background-color: transparent; }
+}
+
+.watermark {
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  font-size: 0.8em;
+  color: rgba(0, 255, 0, 0.3);
+  pointer-events: none;
+  user-select: none;
+  font-family: monospace;
+}
+.terminal-wrapper {
+  position: relative;
+}
+</style>
+</head>
+<body>
+<div class="terminal-wrapper">
+  <div class="terminal">
+    <h1>[ WPA/WPA2 QR HANDSHAKE SCANNER ]</h1>
+    <div id="output">root@fsociety:~$ Type `help` for commands<span class="cursor"></span></div>
+    <input type="text" id="command-line" autocomplete="off" placeholder="Enter command...">
+    <input type="file" accept="image/*" id="qr-input">
+  </div>
+  <div class="watermark">Instagram:@mi1yuan</div>
+</div>
+
+
+
+<script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+<script>
+const outputDiv = document.getElementById("output");
+const commandInput = document.getElementById("command-line");
+const qrInput = document.getElementById("qr-input");
+
+// Print to terminal
+function print(text) {
+  outputDiv.innerHTML += "\n" + text;
+  outputDiv.scrollTop = outputDiv.scrollHeight;
+}
+
+// Terminal commands
+commandInput.addEventListener("keydown", e => {
+  if(e.key === "Enter") {
+    const cmd = commandInput.value.trim().toLowerCase();
+    outputDiv.innerHTML += "\nroot@fsociety:~$ " + cmd;
+
+    if(cmd === "help") {
+      print("Commands:\n  scan   - Scan Wi-Fi QR code\n  clear  - Clear terminal\n  exit   - Close terminal");
+    } 
+    else if(cmd === "scan") {
+      print("[*] Initializing QR scanner...");
+      qrInput.click();
+    } 
+    else if(cmd === "clear") {
+      outputDiv.innerHTML = "root@fsociety:~$ ";
+    } 
+    else if(cmd === "exit") {
+      print("Session terminated.");
+      commandInput.disabled = true;
+    } 
+    else {
+      print("bash: " + cmd + ": command not found");
+    }
+    commandInput.value = "";
+  }
+});
+
+// QR code scanning
+qrInput.addEventListener("change", e => {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function() {
+    const img = new Image();
+    img.src = reader.result;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+      if(code){
+        const qr = code.data;
+        const ssidMatch = /S:([^;]*)/.exec(qr);
+        const passwordMatch = /P:([^;]*)/.exec(qr);
+        const typeMatch = /T:([^;]*)/.exec(qr);
+        const hiddenMatch = /H:([^;]*)/.exec(qr);
+        const info = "\n[+] QR Scan Successful" +
+                     "\nSSID: " + (ssidMatch ? ssidMatch[1] : "N/A") +
+                     "\nPassword: " + (passwordMatch ? passwordMatch[1] : "N/A") +
+                     "\nEncryption: " + (typeMatch ? typeMatch[1] : "N/A") +
+                     "\nHidden: " + (hiddenMatch ? hiddenMatch[1] : "No");
+        print(info);
+      } else {
+        print("[!] No QR code found.");
+      }
+    }
+  }
+  reader.readAsDataURL(file);
+});
+</script>
+
+</body>
+</html>
