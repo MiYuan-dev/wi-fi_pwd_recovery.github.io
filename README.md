@@ -20,7 +20,7 @@ It scans Wi-Fi QR codes and extracts **SSID, password, encryption type, and hidd
 
 ---
 
-![App Screenshot](https://imgur.com/DLwuPi3.jpeg)
+![App Screenshot](https://imgur.com/9XkEaig.jpeg)
 
 ---
 
