@@ -20,6 +20,10 @@ It scans Wi-Fi QR codes and extracts **SSID, password, encryption type, and hidd
 
 ---
 
+![App Screenshot](https://imgur.com/DLwuPi3.jpeg)
+
+---
+
 ## 🧩 Technologies Used
 - **HTML5** — Structure  
 - **CSS3** — Styling (Terminal aesthetics)  
